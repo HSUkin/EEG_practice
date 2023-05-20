@@ -11,40 +11,63 @@ import numpy as np
 import pandas as pd
 import matplotlib
 from matplotlib import font_manager
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 from EEG import preprocessing
-
+from EEG import erp_analyze
 
 matplotlib.use('Qt5Agg')  # 交互
-os.chdir("D:/222experiment_material/EEG_DATA")  # 修改当前工作目录
+read_data_path = r"D:\222experiment_material\EEGpy\data"
+os.chdir(read_data_path)  # 修改当前工作目录
+save_path = "./lkm/lkm_epo"
+
 
 channel_ref = ['E57','E100']
 time = {
     'min':-0.2,
     'max':1
 }
-save_path = "D:/222experiment_material/EEG_DATA/lkm_epo/"
-# Press the green button in the gutter to run the script.
+
+
+
 if __name__ == '__main__':
-    for i in range(1,4):
-        file_path = './practice/lkm_p_raw/pain_{0}.mff'.format(i)
-        raw = mne.io.read_raw_egi(file_path)
-        # 注释
-        raw = preprocessing.annotation(raw)
-        # 滤波和降采样
-        raw_filter = preprocessing.filter_resample(raw, 250)
-        # 插值坏导
-        raw_bad = preprocessing.handle_bad(raw_filter)
-        # 重参考与初步剔除坏段
-        raw_reference = preprocessing.reference(raw_bad,channel_ref)
-        #ICA
-        raw_ica = preprocessing.ica_analyze(raw_reference)
-        #raw_ica.save(save_path+'.finic_{0}_raw.fif'.format(i))  # 保存ICA处理后文件
-        #分段
-        epochs = preprocessing.epo_split(raw_ica,time)
-        #epochs.save(save_path+'{0}_epo.fif'.format(i))  # 保存分段文件
-        plt.close('all')
+    # 预处理
+    # for i in range(1, 4):
+    #     file_path = './lkm/lkm_p_raw/pain_{0}.mff'.format(i)
+    #     raw_ica = preprocessing.ppc_ica(file_path,channel_ref)
+    #     raw_ica.save(save_path + 'finic_{0}_raw.fif'.format(i))  # 保存ICA处理后文件
+    #     epoch  = preprocessing.ppc_epoch(raw_ica,time)
+    #     plt.close('all')
+    #     epoch.save(save_path+'{0}_epo.fif'.format(i))  # 保存分段文件
+    # ERP
+    # 参数设置
+    df = pd.DataFrame(columns=['sub', 'condition', 'channel', 'latency', 'Amplitude'])
+    nplist = []
+    palist = []
+    list_epochs = []
+    condition_name = ['nopa', 'pain']
+    cp = ['E55', 'E37', 'E42', 'E47', 'E87', 'E93', 'E98']
+
+
+    for i in range(1, 4):
+        file_path = './lkm/lkm_epo/{0}_epo.fif'.format(i)
+        epochs,new_df = erp_analyze.ANAL_ERP(i,file_path,cp,df)
+        df = new_df
+        list_epochs.append(epochs)
+        # nplist.append(evoke1)  # 执行这个命令需要返回nopa,pain
+        # palist.append(evoke2)
+    nopa,pain=erp_analyze.get_condition_epolist(list_epochs)
+    ek_nopa_list = erp_analyze.get_condition_evoke(nopa)
+    ek_pain_list = erp_analyze.get_condition_evoke(pain)
+    epos = [ek_nopa_list,ek_pain_list]
+    erp_analyze.plot_compare(epos,condition_name,cp)
+    plt.close('all')
+
+    # # 受试者平均对比
+    # evokes = [nplist,palist]
+    # erp_analyze.plot_subwise_compare(evokes, condition_name,cp)
+    # plt.close('all')
 
 
 
@@ -57,23 +80,3 @@ if __name__ == '__main__':
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/

@@ -1,14 +1,14 @@
 
 import os
 import mne
-import numpy as np
-import pandas as pd
 import matplotlib
 from matplotlib import font_manager
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 
+read_data_path = r"D:\222experiment_material\EEGpy\data"
+os.chdir(read_data_path)  # 修改当前工作目录
+save_path = read_data_path+"/lkm/lkm_epo"
 
 def filter_resample(raw,rate):
     # 滤波
@@ -127,8 +127,46 @@ def epo_split(raw_ica,time):
 
 
 
+# 数据预处理
 
 
+def ppc_ica(file_path,channel_ref):
+        raw = mne.io.read_raw_egi(file_path)
+        # 注释
+        raw = annotation(raw)
+        # 滤波和降采样
+        raw_filter = filter_resample(raw, 250)
+        # 插值坏导
+        raw_bad = handle_bad(raw_filter)
+        # 重参考与初步剔除坏段
+        raw_reference = reference(raw_bad,channel_ref)
+        #ICA
+        raw_ica = ica_analyze(raw_reference)
+def ppc_epoch(raw_ica,time):
+        #分段
+        epochs = epo_split(raw_ica,time)
+        return epochs
+
+
+# 数据预处理
+# for i in range(1,4):
+#     file_path = './lkm/lkm_p_raw/pain_{0}.mff'.format(i)
+#     raw = mne.io.read_raw_egi(file_path)
+#     # 注释
+#     raw = preprocessing.annotation(raw)
+#     # 滤波和降采样
+#     raw_filter = preprocessing.filter_resample(raw, 250)
+#     # 插值坏导
+#     raw_bad = preprocessing.handle_bad(raw_filter)
+#     # 重参考与初步剔除坏段
+#     raw_reference = preprocessing.reference(raw_bad,channel_ref)
+#     #ICA
+#     raw_ica = preprocessing.ica_analyze(raw_reference)
+#     #raw_ica.save(save_path+'.finic_{0}_raw.fif'.format(i))  # 保存ICA处理后文件
+#     #分段
+#     epochs = preprocessing.epo_split(raw_ica,time)
+#     #epochs.save(save_path+'{0}_epo.fif'.format(i))  # 保存分段文件
+#     plt.close('all')
 
 
 
