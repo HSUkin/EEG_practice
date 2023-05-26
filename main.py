@@ -32,14 +32,17 @@ time = {
 
 
 if __name__ == '__main__':
-    # 预处理
-    # for i in range(1, 4):
-    #     file_path = './lkm/lkm_p_raw/pain_{0}.mff'.format(i)
+    # #  数据导入
+    # folder_path = './lkm/lkm_p_raw'
+    # file_list = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith('.mff')]
+    # #预处理
+    # for i,file_path in zip(range(1,4),file_list):
     #     raw_ica = preprocessing.ppc_ica(file_path,channel_ref)
     #     raw_ica.save(save_path + 'finic_{0}_raw.fif'.format(i))  # 保存ICA处理后文件
     #     epoch  = preprocessing.ppc_epoch(raw_ica,time)
     #     plt.close('all')
     #     epoch.save(save_path+'{0}_epo.fif'.format(i))  # 保存分段文件
+
     # ERP
     # 参数设置
     df = pd.DataFrame(columns=['sub', 'condition', 'channel', 'latency', 'Amplitude'])
@@ -48,10 +51,10 @@ if __name__ == '__main__':
     list_epochs = []
     condition_name = ['nopa', 'pain']
     cp = ['E55', 'E37', 'E42', 'E47', 'E87', 'E93', 'E98']
-
-
-    for i in range(1, 4):
-        file_path = './lkm/lkm_epo/{0}_epo.fif'.format(i)
+    folder_epo = './lkm/lkm_epo'
+    epofile_list = [os.path.join(folder_epo, f) for f in os.listdir(folder_epo) if f.endswith('_epo.fif')]
+    # 预处理
+    for i, file_path in zip(range(1, 4), epofile_list):
         epochs,new_df = erp_analyze.ANAL_ERP(i,file_path,cp,df)
         df = new_df
         list_epochs.append(epochs)
